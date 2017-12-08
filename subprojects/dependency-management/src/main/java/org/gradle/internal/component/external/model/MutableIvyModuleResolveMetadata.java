@@ -19,6 +19,8 @@ package org.gradle.internal.component.external.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.gradle.api.internal.artifacts.ivyservice.NamespaceId;
+import org.gradle.api.internal.attributes.ImmutableAttributesFactory;
+import org.gradle.api.internal.model.NamedObjectInstantiator;
 import org.gradle.internal.component.external.descriptor.Artifact;
 import org.gradle.internal.component.external.descriptor.Configuration;
 import org.gradle.internal.component.model.Exclude;
@@ -31,7 +33,7 @@ public interface MutableIvyModuleResolveMetadata extends MutableModuleComponentR
      * {@inheritDoc}
      */
     @Override
-    IvyModuleResolveMetadata asImmutable();
+    IvyModuleResolveMetadata asImmutable(ImmutableAttributesFactory immutableAttributesFactory, NamedObjectInstantiator namedObjectInstantiator);
 
     /**
      * Returns the Ivy definitions for the configurations of this module.

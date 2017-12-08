@@ -20,17 +20,23 @@ package org.gradle.internal.component.external.model
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.internal.artifacts.dependencies.DefaultMutableVersionConstraint
+import org.gradle.api.internal.attributes.ImmutableAttributesFactory
+import org.gradle.api.internal.model.NamedObjectInstantiator
 import org.gradle.internal.component.external.descriptor.Configuration
 import org.gradle.internal.component.external.descriptor.MavenScope
 import org.gradle.internal.component.model.DependencyMetadata
 import org.gradle.internal.component.model.ModuleSource
+import org.gradle.util.TestUtil
 
 import static org.gradle.internal.component.external.model.DefaultModuleComponentSelector.newSelector
 
 class DefaultMavenModuleResolveMetadataTest extends AbstractModuleComponentResolveMetadataTest {
+    private final ImmutableAttributesFactory attributesFactory = TestUtil.attributesFactory()
+    private final NamedObjectInstantiator objectInstantiator = NamedObjectInstantiator.INSTANCE
+
     @Override
     AbstractModuleComponentResolveMetadata createMetadata(ModuleComponentIdentifier id, List<Configuration> configurations, List<DependencyMetadata> dependencies) {
-        return new DefaultMavenModuleResolveMetadata(new DefaultMutableMavenModuleResolveMetadata(Mock(ModuleVersionIdentifier), id, dependencies))
+        return new DefaultMavenModuleResolveMetadata(new DefaultMutableMavenModuleResolveMetadata(Mock(ModuleVersionIdentifier), id, dependencies), attributesFactory, objectInstantiator)
     }
 
     def "builds and caches dependencies for a scope"() {
@@ -93,7 +99,7 @@ class DefaultMavenModuleResolveMetadataTest extends AbstractModuleComponentResol
         mutable.packaging = "other"
         mutable.relocated = true
         mutable.snapshotTimestamp = "123"
-        def metadata = mutable.asImmutable()
+        def metadata = mutable.asImmutable(attributesFactory, objectInstantiator)
 
         when:
         def copy = metadata.withSource(source)

@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.gradle.api.artifacts.ModuleVersionIdentifier;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
+import org.gradle.api.internal.attributes.AttributeContainerInternal;
 import org.gradle.api.internal.attributes.AttributesSchemaInternal;
 import org.gradle.api.internal.attributes.EmptySchema;
 import org.gradle.internal.component.external.descriptor.Configuration;
@@ -204,7 +205,7 @@ abstract class AbstractModuleComponentResolveMetadata implements ModuleComponent
     }
 
     @Override
-    public synchronized ImmutableList<? extends ConfigurationMetadata> getVariantsForGraphTraversal() {
+    public synchronized ImmutableList<? extends ConfigurationMetadata> getVariantsForGraphTraversal(AttributeContainerInternal consumerAttributes) {
         if (graphVariants == null) {
             graphVariants = buildVariantsForGraphTraversal(variants);
         }

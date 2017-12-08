@@ -25,6 +25,7 @@ import org.gradle.api.internal.artifacts.dependencies.DefaultMutableVersionConst
 import org.gradle.api.internal.artifacts.repositories.resolver.DependencyConstraintMetadataImpl
 import org.gradle.api.internal.artifacts.repositories.resolver.DirectDependencyMetadataImpl
 import org.gradle.api.internal.attributes.DefaultAttributesSchema
+import org.gradle.api.internal.model.NamedObjectInstantiator
 import org.gradle.api.internal.notations.DependencyMetadataNotationParser
 import org.gradle.internal.component.external.descriptor.MavenScope
 import org.gradle.internal.component.model.ComponentAttributeMatcher
@@ -41,6 +42,8 @@ abstract class AbstractDependencyMetadataRulesTest extends Specification {
     def instantiator = DirectInstantiator.INSTANCE
     def notationParser = DependencyMetadataNotationParser.parser(instantiator, DirectDependencyMetadataImpl)
     def constraintNotationParser = DependencyMetadataNotationParser.parser(instantiator, DependencyConstraintMetadataImpl)
+    def attributesFactory = TestUtil.attributesFactory()
+    def objectInstantiator = NamedObjectInstantiator.INSTANCE
 
     @Shared versionIdentifier = new DefaultModuleVersionIdentifier("org.test", "producer", "1.0")
     @Shared componentIdentifier = DefaultModuleComponentIdentifier.newId(versionIdentifier)
@@ -94,7 +97,7 @@ abstract class AbstractDependencyMetadataRulesTest extends Specification {
 
         when:
         doAddDependencyMetadataRule(metadataImplementation, "default", rule)
-        def metadata = metadataImplementation.asImmutable()
+        def metadata = metadataImplementation.asImmutable(attributesFactory, objectInstantiator)
 
         then:
         0 * rule.execute(_)
@@ -250,7 +253,7 @@ abstract class AbstractDependencyMetadataRulesTest extends Specification {
     }
 
     def selectTargetConfigurationMetadata(MutableModuleComponentResolveMetadata targetComponent) {
-        selectTargetConfigurationMetadata(targetComponent.asImmutable())
+        selectTargetConfigurationMetadata(targetComponent.asImmutable(attributesFactory, objectInstantiator))
     }
 
     def selectTargetConfigurationMetadata(ModuleComponentResolveMetadata immutable) {

@@ -26,6 +26,8 @@ import org.gradle.api.internal.artifacts.DefaultModuleIdentifier
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
 import org.gradle.api.internal.artifacts.ImmutableModuleIdentifierFactory
 import org.gradle.api.internal.artifacts.ivyservice.NamespaceId
+import org.gradle.api.internal.attributes.ImmutableAttributesFactory
+import org.gradle.api.internal.model.NamedObjectInstantiator
 import org.gradle.api.specs.Specs
 import org.gradle.internal.component.external.model.DefaultModuleComponentIdentifier
 import org.gradle.internal.component.external.model.DefaultMutableIvyModuleResolveMetadata
@@ -35,6 +37,7 @@ import org.gradle.internal.resolve.ModuleVersionResolveException
 import org.gradle.internal.rules.RuleAction
 import org.gradle.internal.rules.RuleActionAdapter
 import org.gradle.internal.rules.RuleActionValidationException
+import org.gradle.util.TestUtil
 import spock.lang.Specification
 
 import javax.xml.namespace.QName
@@ -47,13 +50,15 @@ class DefaultComponentMetadataHandlerTest extends Specification {
     private static final String MODULE = "module"
 
     // For testing ComponentMetadataHandler capabilities
-    def handler = new DefaultComponentMetadataHandler(DirectInstantiator.INSTANCE, moduleIdentifierFactory)
+    private ImmutableAttributesFactory attributesFactory = TestUtil.attributesFactory()
+    private NamedObjectInstantiator objectInstantiator = NamedObjectInstantiator.INSTANCE
+    def handler = new DefaultComponentMetadataHandler(DirectInstantiator.INSTANCE, moduleIdentifierFactory, attributesFactory, objectInstantiator)
     RuleActionAdapter<ComponentMetadataDetails> adapter = Mock(RuleActionAdapter)
-    def mockedHandler = new DefaultComponentMetadataHandler(DirectInstantiator.INSTANCE, adapter, moduleIdentifierFactory)
+    def mockedHandler = new DefaultComponentMetadataHandler(DirectInstantiator.INSTANCE, adapter, moduleIdentifierFactory, attributesFactory, objectInstantiator)
     def ruleAction = Stub(RuleAction)
 
     def "does nothing when no rules registered"() {
-        def metadata = ivyMetadata().asImmutable()
+        def metadata = ivyMetadata().asImmutable(attributesFactory, objectInstantiator)
 
         expect:
         mockedHandler.processMetadata(metadata).is(metadata)
@@ -202,7 +207,7 @@ class DefaultComponentMetadataHandlerTest extends Specification {
         metadata.statusScheme = ["alpha", "beta"]
 
         when:
-        handler.processMetadata(metadata.asImmutable())
+        handler.processMetadata(metadata.asImmutable(attributesFactory, objectInstantiator))
 
         then:
         ModuleVersionResolveException e = thrown()
@@ -217,7 +222,7 @@ class DefaultComponentMetadataHandlerTest extends Specification {
         handler.all { throw failure }
 
         and:
-        handler.processMetadata(metadata.asImmutable())
+        handler.processMetadata(metadata.asImmutable(attributesFactory, objectInstantiator))
 
         then:
         InvalidUserCodeException e = thrown()
@@ -235,7 +240,7 @@ class DefaultComponentMetadataHandlerTest extends Specification {
         handler.all { ComponentMetadataDetails cmd, IvyModuleDescriptor imd -> closuresCalled << 3 }
 
         and:
-        handler.processMetadata(metadata.asImmutable())
+        handler.processMetadata(metadata.asImmutable(attributesFactory, objectInstantiator))
 
         then:
         closuresCalled.sort() == [ 1, 2, 3 ]
@@ -249,7 +254,7 @@ class DefaultComponentMetadataHandlerTest extends Specification {
         }
 
         when:
-        handler.processMetadata(metadata.asImmutable())
+        handler.processMetadata(metadata.asImmutable(attributesFactory, objectInstantiator))
 
         then:
         noExceptionThrown()
@@ -279,7 +284,7 @@ class DefaultComponentMetadataHandlerTest extends Specification {
         }
 
         when:
-        handler.processMetadata(metadata.asImmutable())
+        handler.processMetadata(metadata.asImmutable(attributesFactory, objectInstantiator))
 
         then:
         noExceptionThrown()
@@ -310,7 +315,7 @@ class DefaultComponentMetadataHandlerTest extends Specification {
         }
 
         when:
-        handler.processMetadata(metadata.asImmutable())
+        handler.processMetadata(metadata.asImmutable(attributesFactory, objectInstantiator))
 
         then:
         noExceptionThrown()
@@ -326,7 +331,7 @@ class DefaultComponentMetadataHandlerTest extends Specification {
         }
 
         when:
-        handler.processMetadata(metadata.asImmutable())
+        handler.processMetadata(metadata.asImmutable(attributesFactory, objectInstantiator))
 
         then:
         !invoked
@@ -375,7 +380,7 @@ class DefaultComponentMetadataHandlerTest extends Specification {
         }
 
         when:
-        handler.processMetadata(metadata.asImmutable())
+        handler.processMetadata(metadata.asImmutable(attributesFactory, objectInstantiator))
 
         then:
         noExceptionThrown()

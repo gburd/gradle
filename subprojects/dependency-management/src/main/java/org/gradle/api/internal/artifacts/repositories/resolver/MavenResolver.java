@@ -23,7 +23,9 @@ import org.gradle.api.internal.artifacts.ivyservice.ivyresolve.ModuleComponentRe
 import org.gradle.api.internal.artifacts.repositories.metadata.ImmutableMetadataSources;
 import org.gradle.api.internal.artifacts.repositories.metadata.MetadataArtifactProvider;
 import org.gradle.api.internal.artifacts.repositories.transport.RepositoryTransport;
+import org.gradle.api.internal.attributes.ImmutableAttributesFactory;
 import org.gradle.api.internal.component.ArtifactType;
+import org.gradle.api.internal.model.NamedObjectInstantiator;
 import org.gradle.api.resources.MissingResourceException;
 import org.gradle.internal.component.external.model.FixedComponentArtifacts;
 import org.gradle.internal.component.external.model.MavenModuleResolveMetadata;
@@ -69,7 +71,8 @@ public class MavenResolver extends ExternalResourceResolver<MavenModuleResolveMe
                          CacheAwareExternalResourceAccessor cacheAwareExternalResourceAccessor,
                          FileStore<String> resourcesFileStore,
                          ImmutableMetadataSources metadataSources,
-                         MetadataArtifactProvider metadataArtifactProvider) {
+                         MetadataArtifactProvider metadataArtifactProvider,
+                         ImmutableAttributesFactory immutableAttributesFactory, NamedObjectInstantiator namedObjectInstantiator) {
         super(name, transport.isLocal(),
             transport.getRepository(),
             transport.getResourceAccessor(),
@@ -78,7 +81,8 @@ public class MavenResolver extends ExternalResourceResolver<MavenModuleResolveMe
             artifactFileStore,
             moduleIdentifierFactory,
             metadataSources,
-            metadataArtifactProvider);
+            metadataArtifactProvider,
+            immutableAttributesFactory, namedObjectInstantiator);
         this.mavenMetaDataLoader = new MavenMetadataLoader(cacheAwareExternalResourceAccessor, resourcesFileStore);
         this.root = rootUri;
         updatePatterns();

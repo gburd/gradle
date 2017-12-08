@@ -27,7 +27,7 @@ import java.util.List;
 public abstract class AttributeConfigurationSelector implements DependencyMetadata {
 
     public static ConfigurationMetadata selectConfigurationUsingAttributeMatching(ImmutableAttributes consumerAttributes, ComponentResolveMetadata targetComponent, AttributesSchemaInternal consumerSchema) {
-        List<? extends ConfigurationMetadata> consumableConfigurations = targetComponent.getVariantsForGraphTraversal();
+        List<? extends ConfigurationMetadata> consumableConfigurations = targetComponent.getVariantsForGraphTraversal(consumerAttributes);
         AttributesSchemaInternal producerAttributeSchema = targetComponent.getAttributesSchema();
         AttributeMatcher attributeMatcher = consumerSchema.withProducer(producerAttributeSchema);
         ConfigurationMetadata fallbackConfiguration = targetComponent.getConfiguration(Dependency.DEFAULT_CONFIGURATION);

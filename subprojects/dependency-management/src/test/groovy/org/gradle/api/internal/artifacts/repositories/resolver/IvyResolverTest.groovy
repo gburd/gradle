@@ -18,17 +18,19 @@ package org.gradle.api.internal.artifacts.repositories.resolver
 import com.google.common.collect.ImmutableList
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.internal.artifacts.ImmutableModuleIdentifierFactory
-import org.gradle.api.internal.artifacts.repositories.metadata.IvyMetadataArtifactProvider
 import org.gradle.api.internal.artifacts.repositories.metadata.DefaultIvyDescriptorMetadataSource
 import org.gradle.api.internal.artifacts.repositories.metadata.ImmutableMetadataSources
+import org.gradle.api.internal.artifacts.repositories.metadata.IvyMetadataArtifactProvider
 import org.gradle.api.internal.artifacts.repositories.metadata.MetadataArtifactProvider
 import org.gradle.api.internal.artifacts.repositories.transport.RepositoryTransport
+import org.gradle.api.internal.model.NamedObjectInstantiator
 import org.gradle.internal.component.model.DefaultComponentOverrideMetadata
 import org.gradle.internal.resolve.result.DefaultBuildableModuleComponentMetaDataResolveResult
 import org.gradle.internal.resource.local.FileResourceRepository
 import org.gradle.internal.resource.local.FileStore
 import org.gradle.internal.resource.local.LocallyAvailableResourceFinder
 import org.gradle.internal.resource.transfer.CacheAwareExternalResourceAccessor
+import org.gradle.util.TestUtil
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -178,7 +180,9 @@ class IvyResolverTest extends Specification {
             Stub(org.gradle.internal.Factory)
             ,
             metadataSources,
-            metadataArtifactProvider).with {
+            metadataArtifactProvider,
+            TestUtil.attributesFactory(),
+            NamedObjectInstantiator.INSTANCE).with {
             if (ivyPattern) {
                 it.addDescriptorLocation(URI.create(""), ivyPattern)
             }

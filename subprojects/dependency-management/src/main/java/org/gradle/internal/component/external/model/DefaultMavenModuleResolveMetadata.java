@@ -19,7 +19,11 @@ package org.gradle.internal.component.external.model;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
+import org.gradle.api.attributes.Usage;
 import org.gradle.api.internal.attributes.AttributesSchemaInternal;
+import org.gradle.api.internal.attributes.ImmutableAttributes;
+import org.gradle.api.internal.attributes.ImmutableAttributesFactory;
+import org.gradle.api.internal.model.NamedObjectInstantiator;
 import org.gradle.internal.component.external.descriptor.MavenScope;
 import org.gradle.internal.component.model.ConfigurationMetadata;
 import org.gradle.internal.component.model.DefaultIvyArtifactName;
@@ -36,14 +40,18 @@ public class DefaultMavenModuleResolveMetadata extends AbstractModuleComponentRe
     public static final String POM_PACKAGING = "pom";
     public static final Collection<String> JAR_PACKAGINGS = Arrays.asList("jar", "ejb", "bundle", "maven-plugin", "eclipse-plugin");
     private static final PreferJavaRuntimeVariant SCHEMA_DEFAULT_JAVA_VARIANTS = PreferJavaRuntimeVariant.schema();
+    private final ImmutableAttributes apiVariantAttributes;
+    private final ImmutableAttributes runtimeVariantAttributes;
 
     private final ImmutableList<MavenDependencyDescriptor> dependencies;
     private final String packaging;
     private final boolean relocated;
     private final String snapshotTimestamp;
 
-    DefaultMavenModuleResolveMetadata(DefaultMutableMavenModuleResolveMetadata metadata) {
+    DefaultMavenModuleResolveMetadata(DefaultMutableMavenModuleResolveMetadata metadata, ImmutableAttributesFactory immutableAttributesFactory, NamedObjectInstantiator namedObjectInstantiator) {
         super(metadata);
+        apiVariantAttributes = immutableAttributesFactory.of(Usage.USAGE_ATTRIBUTE, namedObjectInstantiator.named(Usage.class, Usage.JAVA_API));
+        runtimeVariantAttributes = immutableAttributesFactory.of(Usage.USAGE_ATTRIBUTE, namedObjectInstantiator.named(Usage.class, Usage.JAVA_RUNTIME));
         packaging = metadata.getPackaging();
         relocated = metadata.isRelocated();
         snapshotTimestamp = metadata.getSnapshotTimestamp();
@@ -52,6 +60,8 @@ public class DefaultMavenModuleResolveMetadata extends AbstractModuleComponentRe
 
     private DefaultMavenModuleResolveMetadata(DefaultMavenModuleResolveMetadata metadata, ModuleSource source) {
         super(metadata, source);
+        apiVariantAttributes = metadata.apiVariantAttributes;
+        runtimeVariantAttributes = metadata.runtimeVariantAttributes;
         packaging = metadata.packaging;
         relocated = metadata.relocated;
         snapshotTimestamp = metadata.snapshotTimestamp;

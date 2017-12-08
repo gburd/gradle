@@ -25,6 +25,7 @@ import org.gradle.api.artifacts.ModuleVersionIdentifier;
 import org.gradle.api.artifacts.component.ComponentIdentifier;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.internal.artifacts.ivyservice.moduleconverter.dependencies.DependencyDescriptorFactory;
+import org.gradle.api.internal.attributes.AttributeContainerInternal;
 import org.gradle.api.internal.attributes.AttributesSchemaInternal;
 import org.gradle.internal.component.external.model.DefaultConfigurationMetadata;
 import org.gradle.internal.component.external.model.ModuleComponentArtifactMetadata;
@@ -145,8 +146,8 @@ public class ClientModuleResolver implements ComponentMetaDataResolver {
         }
 
         @Override
-        public ImmutableList<? extends ConfigurationMetadata> getVariantsForGraphTraversal() {
-            return delegate.getVariantsForGraphTraversal();
+        public ImmutableList<? extends ConfigurationMetadata> getVariantsForGraphTraversal(AttributeContainerInternal consumerAttributes) {
+            return delegate.getVariantsForGraphTraversal(consumerAttributes);
         }
 
         @Override

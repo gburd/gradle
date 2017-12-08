@@ -41,6 +41,8 @@ public class DefaultModuleMetaDataCache implements ModuleMetaDataCache {
 
     private final BuildCommencedTimeProvider timeProvider;
     private final CacheLockingManager cacheLockingManager;
+    private final ImmutableAttributesFactory immutableAttributesFactory;
+    private final NamedObjectInstantiator namedObjectInstantiator;
 
     private final ModuleMetadataStore moduleMetadataStore;
     private PersistentIndexedCache<ModuleComponentAtRepositoryKey, ModuleMetadataCacheEntry> cache;
@@ -48,6 +50,8 @@ public class DefaultModuleMetaDataCache implements ModuleMetaDataCache {
     public DefaultModuleMetaDataCache(BuildCommencedTimeProvider timeProvider, CacheLockingManager cacheLockingManager, ArtifactCacheMetaData artifactCacheMetaData, ImmutableModuleIdentifierFactory moduleIdentifierFactory, ImmutableAttributesFactory attributesFactory, NamedObjectInstantiator instantiator) {
         this.timeProvider = timeProvider;
         this.cacheLockingManager = cacheLockingManager;
+        this.immutableAttributesFactory = attributesFactory;
+        this.namedObjectInstantiator = instantiator;
 
         moduleMetadataStore = new ModuleMetadataStore(new DefaultPathKeyFileStore(artifactCacheMetaData.getMetaDataStoreDirectory()), new ModuleMetadataSerializer(attributesFactory, instantiator), moduleIdentifierFactory);
     }
@@ -82,7 +86,7 @@ public class DefaultModuleMetaDataCache implements ModuleMetaDataCache {
                     cache.remove(key);
                     return null;
                 }
-                return new DefaultCachedMetaData(entry, entry.configure(metadata), timeProvider);
+                return new DefaultCachedMetaData(entry, entry.configure(metadata, immutableAttributesFactory, namedObjectInstantiator), timeProvider);
             }
         });
     }

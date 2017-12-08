@@ -448,7 +448,7 @@ class IvyDependencyDescriptorTest extends ExternalDependencyDescriptorTest {
         def toComponent = Stub(ComponentResolveMetadata)
         def fromCompile = Stub(ConfigurationMetadata)
         def toMaster = Stub(ConfigurationMetadata)
-        toComponent.variantsForGraphTraversal >> ImmutableList.of(toMaster)
+        toComponent.getVariantsForGraphTraversal(_) >> ImmutableList.of(toMaster)
         toMaster.artifacts >> [Stub(ComponentArtifactMetadata)]
         def attrs = TestUtil.attributesFactory().of(Attribute.of(String), "value").asImmutable()
         def matcher = Stub(AttributeMatcher)

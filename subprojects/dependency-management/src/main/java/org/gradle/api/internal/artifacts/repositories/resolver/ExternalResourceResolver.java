@@ -31,7 +31,9 @@ import org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact.Resol
 import org.gradle.api.internal.artifacts.repositories.metadata.ImmutableMetadataSources;
 import org.gradle.api.internal.artifacts.repositories.metadata.MetadataArtifactProvider;
 import org.gradle.api.internal.artifacts.repositories.metadata.MetadataSource;
+import org.gradle.api.internal.attributes.ImmutableAttributesFactory;
 import org.gradle.api.internal.component.ArtifactType;
+import org.gradle.api.internal.model.NamedObjectInstantiator;
 import org.gradle.caching.internal.BuildCacheHasher;
 import org.gradle.caching.internal.DefaultBuildCacheHasher;
 import org.gradle.internal.UncheckedException;
@@ -102,6 +104,8 @@ public abstract class ExternalResourceResolver<T extends ModuleComponentResolveM
     private final VersionLister versionLister;
     private final ImmutableMetadataSources metadataSources;
     private final MetadataArtifactProvider metadataArtifactProvider;
+    private final ImmutableAttributesFactory immutableAttributesFactory;
+    private final NamedObjectInstantiator namedObjectInstantiator;
 
     private String id;
     private ExternalResourceArtifactResolver cachedArtifactResolver;
@@ -115,7 +119,8 @@ public abstract class ExternalResourceResolver<T extends ModuleComponentResolveM
                                        FileStore<ModuleComponentArtifactIdentifier> artifactFileStore,
                                        ImmutableModuleIdentifierFactory moduleIdentifierFactory,
                                        ImmutableMetadataSources metadataSources,
-                                       MetadataArtifactProvider metadataArtifactProvider) {
+                                       MetadataArtifactProvider metadataArtifactProvider,
+                                       ImmutableAttributesFactory immutableAttributesFactory, NamedObjectInstantiator namedObjectInstantiator) {
         this.name = name;
         this.local = local;
         this.cachingResourceAccessor = cachingResourceAccessor;
@@ -126,6 +131,8 @@ public abstract class ExternalResourceResolver<T extends ModuleComponentResolveM
         this.moduleIdentifierFactory = moduleIdentifierFactory;
         this.metadataSources = metadataSources;
         this.metadataArtifactProvider = metadataArtifactProvider;
+        this.immutableAttributesFactory = immutableAttributesFactory;
+        this.namedObjectInstantiator = namedObjectInstantiator;
     }
 
     public String getId() {
@@ -206,7 +213,7 @@ public abstract class ExternalResourceResolver<T extends ModuleComponentResolveM
             MutableModuleComponentResolveMetadata value = source.create(name, componentResolvers, moduleVersionIdentifier, prescribedMetaData, artifactResolver, result);
             if (value != null) {
                 value.setSource(artifactResolver.getSource());
-                result.resolved(value.asImmutable());
+                result.resolved(value.asImmutable(immutableAttributesFactory, namedObjectInstantiator));
                 return;
             }
         }

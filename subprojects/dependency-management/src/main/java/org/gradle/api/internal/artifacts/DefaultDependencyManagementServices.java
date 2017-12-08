@@ -141,7 +141,8 @@ public class DefaultDependencyManagementServices implements DependencyManagement
                                                           ImmutableModuleIdentifierFactory moduleIdentifierFactory,
                                                           InstantiatorFactory instantiatorFactory,
                                                           FileResourceRepository fileResourceRepository,
-                                                          ExperimentalFeatures experimentalFeatures) {
+                                                          ExperimentalFeatures experimentalFeatures,
+                                                          ImmutableAttributesFactory immutableAttributesFactory) {
             return new DefaultBaseRepositoryFactory(
                 localMavenRepositoryLocator,
                 fileResolver,
@@ -156,7 +157,9 @@ public class DefaultDependencyManagementServices implements DependencyManagement
                 moduleIdentifierFactory,
                 instantiatorFactory,
                 fileResourceRepository,
-                experimentalFeatures
+                experimentalFeatures,
+                immutableAttributesFactory,
+                NamedObjectInstantiator.INSTANCE
             );
         }
 
@@ -221,8 +224,8 @@ public class DefaultDependencyManagementServices implements DependencyManagement
             return instantiator.newInstance(DefaultDependencyConstraintHandler.class, configurationContainer, dependencyFactory);
         }
 
-        DefaultComponentMetadataHandler createComponentMetadataHandler(Instantiator instantiator, ImmutableModuleIdentifierFactory moduleIdentifierFactory) {
-            return instantiator.newInstance(DefaultComponentMetadataHandler.class, instantiator, moduleIdentifierFactory);
+        DefaultComponentMetadataHandler createComponentMetadataHandler(Instantiator instantiator, ImmutableModuleIdentifierFactory moduleIdentifierFactory, ImmutableAttributesFactory immutableAttributesFactory) {
+            return instantiator.newInstance(DefaultComponentMetadataHandler.class, instantiator, moduleIdentifierFactory, immutableAttributesFactory, NamedObjectInstantiator.INSTANCE);
         }
 
         DefaultComponentModuleMetadataHandler createComponentModuleMetadataHandler(Instantiator instantiator, ImmutableModuleIdentifierFactory moduleIdentifierFactory) {

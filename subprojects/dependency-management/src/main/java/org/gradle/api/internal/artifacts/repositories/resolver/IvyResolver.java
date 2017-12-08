@@ -21,7 +21,9 @@ import org.gradle.api.internal.artifacts.ivyservice.ivyresolve.ModuleComponentRe
 import org.gradle.api.internal.artifacts.repositories.metadata.ImmutableMetadataSources;
 import org.gradle.api.internal.artifacts.repositories.metadata.MetadataArtifactProvider;
 import org.gradle.api.internal.artifacts.repositories.transport.RepositoryTransport;
+import org.gradle.api.internal.attributes.ImmutableAttributesFactory;
 import org.gradle.api.internal.component.ArtifactType;
+import org.gradle.api.internal.model.NamedObjectInstantiator;
 import org.gradle.caching.internal.BuildCacheHasher;
 import org.gradle.internal.Factory;
 import org.gradle.internal.component.external.model.IvyModuleResolveMetadata;
@@ -53,8 +55,9 @@ public class IvyResolver extends ExternalResourceResolver<IvyModuleResolveMetada
                        ImmutableModuleIdentifierFactory moduleIdentifierFactory,
                        Factory<ComponentMetadataSupplier> componentMetadataSupplierFactory,
                        ImmutableMetadataSources repositoryContentFilter,
-                       MetadataArtifactProvider metadataArtifactProvider) {
-        super(name, transport.isLocal(), transport.getRepository(), transport.getResourceAccessor(), new ChainedVersionLister(new ResourceVersionLister(transport.getRepository())), locallyAvailableResourceFinder, artifactFileStore, moduleIdentifierFactory, repositoryContentFilter, metadataArtifactProvider);
+                       MetadataArtifactProvider metadataArtifactProvider,
+                       ImmutableAttributesFactory immutableAttributesFactory, NamedObjectInstantiator namedObjectInstantiator) {
+        super(name, transport.isLocal(), transport.getRepository(), transport.getResourceAccessor(), new ChainedVersionLister(new ResourceVersionLister(transport.getRepository())), locallyAvailableResourceFinder, artifactFileStore, moduleIdentifierFactory, repositoryContentFilter, metadataArtifactProvider, immutableAttributesFactory, namedObjectInstantiator);
         this.componentMetadataSupplierFactory = componentMetadataSupplierFactory;
         this.dynamicResolve = dynamicResolve;
         this.localRepositoryAccess = new IvyLocalRepositoryAccess();
