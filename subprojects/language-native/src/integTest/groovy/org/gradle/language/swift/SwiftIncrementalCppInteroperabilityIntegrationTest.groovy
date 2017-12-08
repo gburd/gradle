@@ -18,6 +18,7 @@ package org.gradle.language.swift
 
 import org.gradle.nativeplatform.fixtures.app.IncrementalSwiftModifyCppDepApp
 import org.gradle.nativeplatform.fixtures.app.IncrementalSwiftModifyCppDepHeadersApp
+import org.gradle.nativeplatform.fixtures.app.IncrementalSwiftModifyCppDepModuleMapApp
 
 class SwiftIncrementalCppInteroperabilityIntegrationTest extends AbstractSwiftMixedLanguageIntegrationTest {
     def "relinks but does not recompile when c++ sources change"() {
@@ -105,6 +106,59 @@ class SwiftIncrementalCppInteroperabilityIntegrationTest extends AbstractSwiftMi
         result.assertTasksExecuted(":cppGreeter:generateModuleMap", ":cppGreeter:dependDebugCpp", ":cppGreeter:compileDebugCpp", ":cppGreeter:linkDebug",
             ":app:compileDebugSwift", ":app:linkDebug", ":app:installDebug", ":app:assemble")
         result.assertTasksNotSkipped(":cppGreeter:dependDebugCpp", ":cppGreeter:compileDebugCpp", ":app:compileDebugSwift")
+        installation("app/build/install/main/debug").exec().out == app.alternateLibraryOutput
+
+        when:
+        succeeds ":app:assemble"
+
+        then:
+        result.assertTasksExecuted(":cppGreeter:generateModuleMap", ":cppGreeter:dependDebugCpp", ":cppGreeter:compileDebugCpp", ":cppGreeter:linkDebug", ":app:compileDebugSwift", ":app:linkDebug", ":app:installDebug", ":app:assemble")
+        result.assertTasksSkipped(":cppGreeter:generateModuleMap", ":cppGreeter:dependDebugCpp", ":cppGreeter:compileDebugCpp", ":cppGreeter:linkDebug", ":app:compileDebugSwift", ":app:linkDebug", ":app:installDebug", ":app:assemble")
+    }
+
+    def "regenerates module map and recompiles swift app when module map file changes"() {
+        def app = new IncrementalSwiftModifyCppDepModuleMapApp()
+        settingsFile << "include ':app', ':cppGreeter'"
+
+        given:
+        buildFile << """
+            project(':app') {
+                apply plugin: 'swift-application'
+                dependencies {
+                    implementation project(':cppGreeter')
+                }
+            }
+            project(':cppGreeter') {
+                apply plugin: 'cpp-library'
+            }
+        """
+        app.library.writeToProject(file("cppGreeter"))
+        app.application.writeToProject(file("app"))
+
+        when:
+        succeeds ":app:assemble"
+
+        then:
+        result.assertTasksExecuted(":cppGreeter:generateModuleMap", ":cppGreeter:dependDebugCpp", ":cppGreeter:compileDebugCpp", ":cppGreeter:linkDebug",
+            ":app:compileDebugSwift", ":app:linkDebug", ":app:installDebug", ":app:assemble")
+        result.assertTasksNotSkipped(":cppGreeter:generateModuleMap", ":cppGreeter:dependDebugCpp", ":cppGreeter:compileDebugCpp", ":cppGreeter:linkDebug",
+            ":app:compileDebugSwift", ":app:linkDebug", ":app:installDebug", ":app:assemble")
+        installation("app/build/install/main/debug").exec().out == app.expectedOutput
+
+        when:
+        app.library.applyChangesToProject(file('cppGreeter'))
+        buildFile << """
+            project(':cppGreeter') {
+                library.publicHeaders.from = ['src/main/${app.library.alternateGreeter.header.sourceFile.path}']
+            }
+        """
+        succeeds ":app:assemble"
+
+        then:
+        result.assertTasksExecuted(":cppGreeter:generateModuleMap", ":cppGreeter:dependDebugCpp", ":cppGreeter:compileDebugCpp", ":cppGreeter:linkDebug",
+            ":app:compileDebugSwift", ":app:linkDebug", ":app:installDebug", ":app:assemble")
+        result.assertTasksNotSkipped(":cppGreeter:generateModuleMap", ":cppGreeter:dependDebugCpp",
+            ":app:compileDebugSwift", ":app:linkDebug", ":app:installDebug", ":app:assemble")
         installation("app/build/install/main/debug").exec().out == app.alternateLibraryOutput
 
         when:
