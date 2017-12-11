@@ -18,6 +18,7 @@ package org.gradle.api.internal.tasks.properties.annotations;
 
 import org.gradle.api.internal.tasks.DeclaredTaskOutputFileProperty;
 import org.gradle.api.internal.tasks.PropertySpecFactory;
+import org.gradle.api.internal.tasks.TaskPropertyUtils;
 import org.gradle.api.internal.tasks.properties.PropertyValue;
 import org.gradle.api.internal.tasks.properties.PropertyVisitor;
 
@@ -31,6 +32,6 @@ public abstract class AbstractOutputPropertyAnnotationHandler implements Propert
         fileSpec
             .withPropertyName(propertyValue.getPropertyName())
             .optional(propertyValue.isOptional());
-        visitor.visitOutputFileProperty(fileSpec);
+        TaskPropertyUtils.resolveDeclaredOutputFileProperty(visitor, fileSpec);
     }
 }

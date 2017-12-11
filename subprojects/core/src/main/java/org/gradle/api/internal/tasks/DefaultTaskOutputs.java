@@ -82,7 +82,7 @@ public class DefaultTaskOutputs implements TaskOutputsInternal {
     public void visitRuntimeProperties(PropertyVisitor visitor) {
         TaskPropertyUtils.ensurePropertiesHaveNames(registeredFileProperties);
         for (DeclaredTaskOutputFileProperty fileProperty : registeredFileProperties) {
-            visitor.visitOutputFileProperty(fileProperty);
+            TaskPropertyUtils.resolveDeclaredOutputFileProperty(visitor, fileProperty);
         }
     }
 
@@ -284,7 +284,7 @@ public class DefaultTaskOutputs implements TaskOutputsInternal {
         boolean hasDeclaredOutputs;
 
         @Override
-        public void visitOutputFileProperty(DeclaredTaskOutputFileProperty outputFileProperty) {
+        public void visitOutputFileProperty(TaskOutputFilePropertySpec outputFileProperty) {
             hasDeclaredOutputs = true;
         }
 

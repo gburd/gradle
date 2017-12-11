@@ -19,9 +19,11 @@ package org.gradle.api.internal.tasks;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import org.gradle.api.NonNullApi;
+import org.gradle.api.internal.tasks.properties.PropertyVisitor;
 import org.gradle.api.tasks.TaskFilePropertyBuilder;
 import org.gradle.internal.Cast;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
@@ -62,6 +64,26 @@ public class TaskPropertyUtils {
             builder.add(new ResolvedTaskOutputFilePropertySpec(cacheableProperty.getPropertyName(), cacheableProperty.getOutputType(), cacheableProperty.getOutputFile()));
         }
         return builder.build();
+    }
+
+    public static void resolveDeclaredOutputFileProperty(PropertyVisitor visitor, DeclaredTaskOutputFileProperty fileSpec) {
+        if (fileSpec instanceof CompositeTaskOutputPropertySpec) {
+            for(
+                Iterator<TaskOutputFilePropertySpec> outputSpecs = ((CompositeTaskOutputPropertySpec) fileSpec).resolveToOutputProperties();
+                outputSpecs.hasNext();) {
+                TaskOutputFilePropertySpec outputSpec = outputSpecs.next();
+                visitor.visitOutputFileProperty(outputSpec);
+            }
+
+        } else {
+            if (fileSpec instanceof CacheableTaskOutputFilePropertySpec) {
+                File outputFile = ((CacheableTaskOutputFilePropertySpec) fileSpec).getOutputFile();
+                if (outputFile == null) {
+                    return;
+                }
+            }
+            visitor.visitOutputFileProperty((TaskOutputFilePropertySpec) fileSpec);
+        }
     }
 
     public static String checkPropertyName(String propertyName) {

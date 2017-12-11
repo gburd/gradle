@@ -17,15 +17,10 @@
 package org.gradle.api.internal.tasks.properties;
 
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterators;
 import org.gradle.api.NonNullApi;
-import org.gradle.api.internal.tasks.CacheableTaskOutputFilePropertySpec;
-import org.gradle.api.internal.tasks.CompositeTaskOutputPropertySpec;
-import org.gradle.api.internal.tasks.DeclaredTaskOutputFileProperty;
 import org.gradle.api.internal.tasks.TaskOutputFilePropertySpec;
 import org.gradle.api.internal.tasks.TaskPropertyUtils;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,19 +31,9 @@ public class GetOutputFilesVisitor extends PropertyVisitor.Adapter {
     private boolean hasDeclaredOutputs;
 
     @Override
-    public void visitOutputFileProperty(DeclaredTaskOutputFileProperty outputFileProperty) {
+    public void visitOutputFileProperty(TaskOutputFilePropertySpec outputFileProperty) {
         hasDeclaredOutputs = true;
-        if (outputFileProperty instanceof CompositeTaskOutputPropertySpec) {
-            Iterators.addAll(specs, ((CompositeTaskOutputPropertySpec) outputFileProperty).resolveToOutputProperties());
-        } else {
-            if (outputFileProperty instanceof CacheableTaskOutputFilePropertySpec) {
-                File outputFile = ((CacheableTaskOutputFilePropertySpec) outputFileProperty).getOutputFile();
-                if (outputFile == null) {
-                    return;
-                }
-            }
-            specs.add((TaskOutputFilePropertySpec) outputFileProperty);
-        }
+        specs.add(outputFileProperty);
     }
 
     public ImmutableSortedSet<TaskOutputFilePropertySpec> getFileProperties() {
