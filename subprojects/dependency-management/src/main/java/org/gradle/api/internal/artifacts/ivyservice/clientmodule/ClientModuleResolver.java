@@ -27,6 +27,7 @@ import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.internal.artifacts.ivyservice.moduleconverter.dependencies.DependencyDescriptorFactory;
 import org.gradle.api.internal.attributes.AttributeContainerInternal;
 import org.gradle.api.internal.attributes.AttributesSchemaInternal;
+import org.gradle.api.internal.attributes.ImmutableAttributes;
 import org.gradle.internal.component.external.model.DefaultConfigurationMetadata;
 import org.gradle.internal.component.external.model.ModuleComponentArtifactMetadata;
 import org.gradle.internal.component.external.model.ModuleComponentResolveMetadata;
@@ -147,7 +148,7 @@ public class ClientModuleResolver implements ComponentMetaDataResolver {
 
         @Override
         public ImmutableList<? extends ConfigurationMetadata> getVariantsForGraphTraversal(AttributeContainerInternal consumerAttributes) {
-            return delegate.getVariantsForGraphTraversal(consumerAttributes);
+            return ImmutableList.of(); //always use the legacy behavior for the deprecated client module concept
         }
 
         @Override
@@ -173,7 +174,7 @@ public class ClientModuleResolver implements ComponentMetaDataResolver {
 
     private static class ClientModuleConfigurationMetadata extends DefaultConfigurationMetadata {
         ClientModuleConfigurationMetadata(ModuleComponentIdentifier componentId, String name, ModuleComponentArtifactMetadata artifact, List<ModuleDependencyMetadata> dependencies) {
-            super(componentId, name, true, true, ImmutableList.<String>of(), ImmutableList.of(artifact), null, ImmutableList.<ExcludeMetadata>of());
+            super(componentId, name, true, true, ImmutableList.<String>of(), ImmutableList.of(artifact), null, ImmutableList.<ExcludeMetadata>of(), ImmutableAttributes.EMPTY);
             setDependencies(dependencies);
         }
     }

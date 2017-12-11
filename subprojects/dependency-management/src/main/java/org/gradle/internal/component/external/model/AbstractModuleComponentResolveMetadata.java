@@ -142,9 +142,15 @@ abstract class AbstractModuleComponentResolveMetadata implements ModuleComponent
      */
     protected abstract DefaultConfigurationMetadata createConfiguration(ModuleComponentIdentifier componentId, String name, boolean transitive, boolean visible, ImmutableList<String> hierarchy, DependencyMetadataRules dependencyMetadataRules);
 
-    private ImmutableList<? extends ConfigurationMetadata> buildVariantsForGraphTraversal(List<? extends ComponentVariant> variants) {
+    /**
+     * If there are no variants defined in the metadata, but the implementation knows how to provide variants for a given consumer (e.g. a Java Library)
+     * it can do that here. If it can not provide variants, an empty list needs to be returned to fall back to traditional configuration selection.
+     */
+    protected abstract ImmutableList<? extends ConfigurationMetadata> deriveVariantsForConsumer(AttributeContainerInternal consumerAttributes);
+
+    private ImmutableList<? extends ConfigurationMetadata> buildVariantsForGraphTraversal(List<? extends ComponentVariant> variants, AttributeContainerInternal consumerAttributes) {
         if (variants.isEmpty()) {
-            return ImmutableList.of();
+            return deriveVariantsForConsumer(consumerAttributes);
         }
         List<VariantBackedConfigurationMetadata> configurations = new ArrayList<VariantBackedConfigurationMetadata>(variants.size());
         for (ComponentVariant variant : variants) {
@@ -207,7 +213,7 @@ abstract class AbstractModuleComponentResolveMetadata implements ModuleComponent
     @Override
     public synchronized ImmutableList<? extends ConfigurationMetadata> getVariantsForGraphTraversal(AttributeContainerInternal consumerAttributes) {
         if (graphVariants == null) {
-            graphVariants = buildVariantsForGraphTraversal(variants);
+            graphVariants = buildVariantsForGraphTraversal(variants, consumerAttributes);
         }
         return graphVariants;
     }

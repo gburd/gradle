@@ -21,8 +21,8 @@ import com.google.common.collect.ImmutableMap;
 import org.gradle.api.Transformer;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.artifacts.component.ModuleComponentSelector;
-import org.gradle.api.attributes.Usage;
 import org.gradle.api.internal.artifacts.ivyservice.NamespaceId;
+import org.gradle.api.internal.attributes.AttributeContainerInternal;
 import org.gradle.api.internal.attributes.AttributesSchemaInternal;
 import org.gradle.api.internal.attributes.ImmutableAttributes;
 import org.gradle.api.internal.attributes.ImmutableAttributesFactory;
@@ -46,8 +46,6 @@ import java.util.Set;
 
 public class DefaultIvyModuleResolveMetadata extends AbstractModuleComponentResolveMetadata implements IvyModuleResolveMetadata {
     private static final PreferJavaRuntimeVariant SCHEMA_DEFAULT_JAVA_VARIANTS = PreferJavaRuntimeVariant.schema();
-    private final ImmutableAttributes apiVariantAttributes;
-    private final ImmutableAttributes runtimeVariantAttributes;
     private final ImmutableMap<String, Configuration> configurationDefinitions;
     private final ImmutableList<IvyDependencyDescriptor> dependencies;
     private final ImmutableList<Artifact> artifactDefinitions;
@@ -59,8 +57,6 @@ public class DefaultIvyModuleResolveMetadata extends AbstractModuleComponentReso
 
     DefaultIvyModuleResolveMetadata(DefaultMutableIvyModuleResolveMetadata metadata, ImmutableAttributesFactory immutableAttributesFactory, NamedObjectInstantiator namedObjectInstantiator) {
         super(metadata);
-        this.apiVariantAttributes = immutableAttributesFactory.of(Usage.USAGE_ATTRIBUTE, namedObjectInstantiator.named(Usage.class, Usage.JAVA_API));
-        this.runtimeVariantAttributes = immutableAttributesFactory.of(Usage.USAGE_ATTRIBUTE, namedObjectInstantiator.named(Usage.class, Usage.JAVA_RUNTIME));
         this.configurationDefinitions = metadata.getConfigurationDefinitions();
         this.branch = metadata.getBranch();
         this.artifactDefinitions = metadata.getArtifactDefinitions();
@@ -71,8 +67,6 @@ public class DefaultIvyModuleResolveMetadata extends AbstractModuleComponentReso
 
     private DefaultIvyModuleResolveMetadata(DefaultIvyModuleResolveMetadata metadata, ModuleSource source) {
         super(metadata, source);
-        this.apiVariantAttributes = metadata.apiVariantAttributes;
-        this.runtimeVariantAttributes = metadata.runtimeVariantAttributes;
         this.configurationDefinitions = metadata.configurationDefinitions;
         this.branch = metadata.branch;
         this.artifactDefinitions = metadata.artifactDefinitions;
@@ -85,8 +79,6 @@ public class DefaultIvyModuleResolveMetadata extends AbstractModuleComponentReso
 
     private DefaultIvyModuleResolveMetadata(DefaultIvyModuleResolveMetadata metadata, List<IvyDependencyDescriptor> dependencies) {
         super(metadata, metadata.getSource());
-        this.apiVariantAttributes = metadata.apiVariantAttributes;
-        this.runtimeVariantAttributes = metadata.runtimeVariantAttributes;
         this.configurationDefinitions = metadata.configurationDefinitions;
         this.branch = metadata.branch;
         this.artifactDefinitions = metadata.artifactDefinitions;
@@ -102,9 +94,14 @@ public class DefaultIvyModuleResolveMetadata extends AbstractModuleComponentReso
         ImmutableList<ModuleComponentArtifactMetadata> artifacts = filterArtifacts(name, hierarchy);
         ImmutableList<ExcludeMetadata> excludesForConfiguration = filterExcludes(hierarchy);
 
-        DefaultConfigurationMetadata configuration = new DefaultConfigurationMetadata(componentId, name, transitive, visible, hierarchy, ImmutableList.copyOf(artifacts), dependencyMetadataRules, excludesForConfiguration);
+        DefaultConfigurationMetadata configuration = new DefaultConfigurationMetadata(componentId, name, transitive, visible, hierarchy, ImmutableList.copyOf(artifacts), dependencyMetadataRules, excludesForConfiguration, ImmutableAttributes.EMPTY);
         configuration.setDependencies(filterDependencies(configuration));
         return configuration;
+    }
+
+    @Override
+    protected ImmutableList<? extends ConfigurationMetadata> deriveVariantsForConsumer(AttributeContainerInternal consumerAttributes) {
+        return ImmutableList.of();
     }
 
     private ImmutableList<ModuleComponentArtifactMetadata> filterArtifacts(String name, ImmutableList<String> hierarchy) {

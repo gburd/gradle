@@ -20,6 +20,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.attributes.Usage;
+import org.gradle.api.internal.attributes.AttributeContainerInternal;
 import org.gradle.api.internal.attributes.AttributesSchemaInternal;
 import org.gradle.api.internal.attributes.ImmutableAttributes;
 import org.gradle.api.internal.attributes.ImmutableAttributesFactory;
@@ -36,7 +37,6 @@ import java.util.Arrays;
 import java.util.Collection;
 
 public class DefaultMavenModuleResolveMetadata extends AbstractModuleComponentResolveMetadata implements MavenModuleResolveMetadata {
-
     public static final String POM_PACKAGING = "pom";
     public static final Collection<String> JAR_PACKAGINGS = Arrays.asList("jar", "ejb", "bundle", "maven-plugin", "eclipse-plugin");
     private static final PreferJavaRuntimeVariant SCHEMA_DEFAULT_JAVA_VARIANTS = PreferJavaRuntimeVariant.schema();
@@ -60,8 +60,8 @@ public class DefaultMavenModuleResolveMetadata extends AbstractModuleComponentRe
 
     private DefaultMavenModuleResolveMetadata(DefaultMavenModuleResolveMetadata metadata, ModuleSource source) {
         super(metadata, source);
-        apiVariantAttributes = metadata.apiVariantAttributes;
-        runtimeVariantAttributes = metadata.runtimeVariantAttributes;
+        this.apiVariantAttributes = metadata.apiVariantAttributes;
+        this.runtimeVariantAttributes = metadata.runtimeVariantAttributes;
         packaging = metadata.packaging;
         relocated = metadata.relocated;
         snapshotTimestamp = metadata.snapshotTimestamp;
@@ -73,9 +73,32 @@ public class DefaultMavenModuleResolveMetadata extends AbstractModuleComponentRe
     @Override
     protected DefaultConfigurationMetadata createConfiguration(ModuleComponentIdentifier componentId, String name, boolean transitive, boolean visible, ImmutableList<String> parents, DependencyMetadataRules dependencyMetadataRules) {
         ImmutableList<? extends ModuleComponentArtifactMetadata> artifacts = getArtifactsForConfiguration(name);
-        DefaultConfigurationMetadata configuration = new DefaultConfigurationMetadata(componentId, name, transitive, visible, parents, artifacts, dependencyMetadataRules, ImmutableList.<ExcludeMetadata>of());
+        ImmutableAttributes attributes = getAttributesForJavaLibrary(name);
+        DefaultConfigurationMetadata configuration = new DefaultConfigurationMetadata(componentId, name, transitive, visible, parents, artifacts, dependencyMetadataRules, ImmutableList.<ExcludeMetadata>of(), attributes);
         configuration.setDependencies(filterDependencies(configuration));
         return configuration;
+    }
+
+    private ImmutableAttributes getAttributesForJavaLibrary(String configurationName) {
+        if (configurationName.equals("compile")) {
+            return apiVariantAttributes;
+        } else if (configurationName.equals("runtime")) {
+            return runtimeVariantAttributes;
+        } else {
+            return ImmutableAttributes.EMPTY;
+        }
+    }
+
+    @Override
+    protected ImmutableList<? extends ConfigurationMetadata> deriveVariantsForConsumer(AttributeContainerInternal consumerAttributes) {
+        Usage usage = consumerAttributes.getAttribute(Usage.USAGE_ATTRIBUTE);
+        if (usage == null) {
+            return ImmutableList.of();
+        }
+        if (Usage.JAVA_API.equals(usage.getName()) || Usage.JAVA_RUNTIME.equals(usage.getName())) {
+            return ImmutableList.<ConfigurationMetadata>builder().add(getConfiguration("compile"), getConfiguration("runtime")).build();
+        }
+        return ImmutableList.of();
     }
 
     private ImmutableList<? extends ModuleComponentArtifactMetadata> getArtifactsForConfiguration(String name) {
